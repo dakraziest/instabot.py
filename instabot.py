@@ -28,6 +28,7 @@ class InstaBot:
 
     url = 'https://www.instagram.com/'
     url_tag = 'https://www.instagram.com/explore/tags/'
+    url_location = 'https://www.instagram.com/explore/locations/'
     url_likes = 'https://www.instagram.com/web/likes/%s/like/'
     url_unlike = 'https://www.instagram.com/web/likes/%s/unlike/'
     url_comment = 'https://www.instagram.com/web/comments/%s/add/'
@@ -179,6 +180,40 @@ class InstaBot:
                     time.sleep(60)
             else:
                 return 0
+                
+                 def get_media_id_by_location (self, tag):  
+                      # you need the media id which can be found by searching the location on the website.
+        """ Get media ID set, by your locations """
+
+        if (self.login_status):
+            log_string = "Get media id by tag: %s" % (tag)
+            self.write_log(log_string)
+            if self.login_status == 1:
+                url_tag = '%s%s%s' % (self.url_tag, tag, '/')
+                try:
+                    r = self.s.get(url_tag)
+                    text = r.text
+
+                    finder_text_start = ('<script type="text/javascript">'
+                                         'window._sharedData = ')
+                    finder_text_start_len = len(finder_text_start)-1
+                    finder_text_end = ';</script>'
+
+                    all_data_start = text.find(finder_text_start)
+                    all_data_end = text.find(finder_text_end, all_data_start + 1)
+                    json_str = text[(all_data_start + finder_text_start_len + 1) \
+                                   : all_data_end]
+                    all_data = json.loads(json_str)
+
+                    self.media_by_tag = list(all_data['entry_data']['LocationsPage'][0]\
+                                            ['location']['media']['nodes'])
+                except:
+                    self.media_by_tag = []
+                    self.write_log("Exept on get_media!")
+                    time.sleep(60)
+            else:
+                return 0
+
 
     def like_all_exist_media (self, media_size=-1):
         """ Like all media ID that have self.media_by_tag """
